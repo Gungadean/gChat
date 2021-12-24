@@ -49,6 +49,8 @@ public class GChatConfig {
     private final boolean requireReceivePermission;
     private final boolean requirePermissionPassthrough;
     private final boolean logChatGlobal;
+    private final String consoleFormat;
+    private final String staffChatFormat;
     private final List<ChatFormat> formats;
     private final Style linkStyle;
 
@@ -56,6 +58,10 @@ public class GChatConfig {
         this.passthrough = c.getNode("passthrough").getBoolean(true);
 
         this.logChatGlobal = c.getNode("log-chat-global").getBoolean(true);
+
+        this.consoleFormat = c.getNode("console-format").getString("<Console> {message}");
+
+        this.staffChatFormat = c.getNode("staff-chat-format").getString("[{server}] <{user}> {message}");
 
         ConfigurationNode requirePermission = c.getNode("require-permission");
         if (requirePermission.isVirtual()) {
@@ -116,6 +122,14 @@ public class GChatConfig {
         return ret;
     }
 
+    public String getConsoleFormat() {
+        return consoleFormat;
+    }
+
+    public String getStaffChatFormat() {
+        return staffChatFormat;
+    }
+  
     public boolean isPassthrough() {
         return this.passthrough;
     }

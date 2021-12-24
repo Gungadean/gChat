@@ -33,12 +33,12 @@ import me.lucko.gchat.api.ChatFormat;
 import me.lucko.gchat.api.events.GChatEvent;
 import me.lucko.gchat.api.events.GChatMessageFormedEvent;
 import me.lucko.gchat.api.events.GChatMessageSendEvent;
+import me.lucko.gchat.api.events.GChatStaffMessageSendEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import java.util.regex.Pattern;
 
@@ -61,6 +61,30 @@ public class GChatListener {
     public void onChat(PlayerChatEvent e) {
         Player player = e.getPlayer();
 
+        if(plugin.getStaffChatters().contains(player.getUniqueId().toString())) {
+            String formattedMessage = plugin.getConfig().getStaffChatFormat().replaceAll("\\{message}", e.getMessage())
+                    .replaceAll("\\{user}", player.getUsername())
+                    .replaceAll("\\{server}", player.getCurrentServer().get().getServerInfo().getName());
+
+            plugin.getProxy().getConsoleCommandSource().sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(formattedMessage));
+
+            e.setResult(PlayerChatEvent.ChatResult.denied());
+
+            GChatStaffMessageSendEvent staffMessageEvent = new GChatStaffMessageSendEvent(player.getUniqueId().toString(), e.getMessage(), formattedMessage);
+            plugin.getProxy().getEventManager().fire(staffMessageEvent).thenAcceptAsync((event) -> {
+                if(!event.getResult().isAllowed()) {
+                    return;
+                }
+
+                for(Player otherPlayer : plugin.getProxy().getAllPlayers()) {
+                    if(otherPlayer.hasPermission("gchat.staff.chat")) {
+                        otherPlayer.sendMessage(LegacyComponentSerializer.legacyAmpersand().deserialize(formattedMessage));
+                    }
+                }
+            });
+            return;
+        }
+
         GChatEvent gChatEvent = new GChatEvent(player, e);
         plugin.getProxy().getEventManager().fire(gChatEvent).join();
 
@@ -71,7 +95,6 @@ public class GChatListener {
         // are permissions required to send chat messages?
         // does the player have perms to send the message
         if (plugin.getConfig().isRequireSendPermission() && !player.hasPermission("gchat.send")) {
-
             // if the message should be passed through when the player doesn't have the permission
             if (plugin.getConfig().isRequirePermissionPassthrough()) {
                 // just return. the default behaviour is for the message to be passed to the backend.
@@ -88,6 +111,7 @@ public class GChatListener {
 
             return;
         }
+
 
         ChatFormat format = plugin.getFormat(player).orElse(null);
 
@@ -151,7 +175,7 @@ public class GChatListener {
         plugin.getProxy().getEventManager().fireAndForget(formedEvent);
 
         if (plugin.getConfig().isLogChatGlobal()) {
-            plugin.getLogger().info(PlainTextComponentSerializer.plainText().serialize(message));
+            plugin.getProxy().getConsoleCommandSource().sendMessage(message);
         }
 
         // send the message to online players
