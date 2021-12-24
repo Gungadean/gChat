@@ -58,6 +58,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -87,6 +88,8 @@ public class GChatPlugin implements GChatApi {
     private final Logger logger;
     private final Path dataDirectory;
     private final Set<Placeholder> placeholders = ConcurrentHashMap.newKeySet();
+
+    private List<String> staffChatters = new ArrayList<>();
 
     private GChatConfig config;
 
@@ -125,6 +128,8 @@ public class GChatPlugin implements GChatApi {
 
         // register command
         proxy.getCommandManager().register("gchat", new GChatCommand(this), "globalchat");
+        proxy.getCommandManager().register("say", new GChatSayCommand(this));
+        proxy.getCommandManager().register("staffchat", new GChatStaffChatCommand(this), "sc");
 
         // init api singleton
         GChat.setApi(this);
@@ -232,6 +237,10 @@ public class GChatPlugin implements GChatApi {
         }
 
         return file;
+    }
+
+    public List<String> getStaffChatters() {
+        return staffChatters;
     }
 
     ProxyServer getProxy() {

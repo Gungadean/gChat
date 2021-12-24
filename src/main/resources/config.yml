@@ -8,6 +8,9 @@ passthrough: true
 # Note: the log-chat and log-file options from gChat are not supported in gChat-Velocity
 log-chat-global: true
 
+# Determines format for console messages sent by /say command
+console-format: "<Console> {message}"
+
 # if permissions are required to send/receive chat messages
 require-permission:
   # if true, players will need to have the "gchat.send" permission to send messages
