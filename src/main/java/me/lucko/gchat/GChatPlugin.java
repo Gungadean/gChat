@@ -90,7 +90,6 @@ public class GChatPlugin implements GChatApi {
     private final Set<Placeholder> placeholders = ConcurrentHashMap.newKeySet();
 
     private List<String> staffChatters = new ArrayList<>();
-
     private GChatConfig config;
 
     @Inject
@@ -130,7 +129,7 @@ public class GChatPlugin implements GChatApi {
         proxy.getCommandManager().register("gchat", new GChatCommand(this), "globalchat");
         proxy.getCommandManager().register("say", new GChatSayCommand(this));
         proxy.getCommandManager().register("staffchat", new GChatStaffChatCommand(this), "sc");
-
+      
         // init api singleton
         GChat.setApi(this);
     }

@@ -129,7 +129,7 @@ public class GChatConfig {
     public String getStaffChatFormat() {
         return staffChatFormat;
     }
-
+  
     public boolean isPassthrough() {
         return this.passthrough;
     }
